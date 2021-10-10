@@ -60,9 +60,6 @@ class FileProcessorTest extends TestCase
      */
     private $mime;
 
-    /**
-     * @inheritdoc
-     */
     protected function setUp(): void
     {
         $this->mediaDirectory = $this->getMockBuilder(WriteInterface::class)
@@ -77,7 +74,7 @@ class FileProcessorTest extends TestCase
             ->willReturn($this->mediaDirectory);
 
         $this->uploaderFactory = $this->getMockBuilder(UploaderFactory::class)
-            ->onlyMethods(['create'])
+            ->setMethods(['create'])
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -97,7 +94,6 @@ class FileProcessorTest extends TestCase
      * @param array $allowedExtensions
      * @param string|null $customerFileUrlPath
      * @param string|null $customerAddressFileUrlPath
-     *
      * @return FileProcessor
      */
     private function getModel(
@@ -105,7 +101,7 @@ class FileProcessorTest extends TestCase
         array $allowedExtensions = [],
         string $customerFileUrlPath = null,
         string $customerAddressFileUrlPath = null
-    ): FileProcessor {
+    ) {
         $model = new FileProcessor(
             $this->filesystem,
             $this->uploaderFactory,
@@ -120,10 +116,7 @@ class FileProcessorTest extends TestCase
         return $model;
     }
 
-    /**
-     * @return void
-     */
-    public function testGetStat(): void
+    public function testGetStat()
     {
         $fileName = '/filename.ext1';
 
@@ -140,10 +133,7 @@ class FileProcessorTest extends TestCase
         $this->assertEquals(1, $result['size']);
     }
 
-    /**
-     * @return void
-     */
-    public function testIsExist(): void
+    public function testIsExist()
     {
         $fileName = '/filename.ext1';
 
@@ -160,8 +150,6 @@ class FileProcessorTest extends TestCase
      * @param array $params
      * @param string $filePath
      * @param string $expectedUrl
-     *
-     * @return void
      * @dataProvider getViewUrlDataProvider
      */
     public function testGetViewUrlTest(
@@ -195,7 +183,7 @@ class FileProcessorTest extends TestCase
     }
 
     /**
-     * @return array
+     * @return array[]
      */
     public function getViewUrlDataProvider(): array
     {
@@ -204,7 +192,7 @@ class FileProcessorTest extends TestCase
                 [
                     'entityTypeCode' => CustomerMetadataInterface::ENTITY_TYPE_CUSTOMER,
                     'customerFileUrlPath' => 'customer/index/viewfile',
-                    'addressFileUrlPath' => 'customer/address/viewfile'
+                    'addressFileUrlPath' => 'customer/address/viewfile',
                 ],
                 '/i/m/image1.jpeg',
                 'http://example.com/customer/index/viewfile/file/57523c876842c97ab9d5fd92f8d8d9ec'
@@ -213,7 +201,7 @@ class FileProcessorTest extends TestCase
                 [
                     'entityTypeCode' => AddressMetadataInterface::ENTITY_TYPE_ADDRESS,
                     'customerFileUrlPath' => 'customer/index/viewfile',
-                    'addressFileUrlPath' => 'customer/address/viewfile'
+                    'addressFileUrlPath' => 'customer/address/viewfile',
                 ],
                 '/i/m/image2.png',
                 'http://example.com/customer/address/viewfile/file/4498819248a7f824893bd3dac4babdfc'
@@ -222,7 +210,7 @@ class FileProcessorTest extends TestCase
                 [
                     'entityTypeCode' => CustomerMetadataInterface::ENTITY_TYPE_CUSTOMER,
                     'customerFileUrlPath' => 'custom_module/customer/preview',
-                    'addressFileUrlPath' => 'custom_module/address/preview'
+                    'addressFileUrlPath' => 'custom_module/address/preview',
                 ],
                 '/i/m/image1.jpeg',
                 'http://example.com/custom_module/customer/preview/file/57523c876842c97ab9d5fd92f8d8d9ec'
@@ -231,7 +219,7 @@ class FileProcessorTest extends TestCase
                 [
                     'entityTypeCode' => AddressMetadataInterface::ENTITY_TYPE_ADDRESS,
                     'customerFileUrlPath' => 'custom_module/customer/preview',
-                    'addressFileUrlPath' => 'custom_module/address/preview'
+                    'addressFileUrlPath' => 'custom_module/address/preview',
                 ],
                 '/i/m/image2.png',
                 'http://example.com/custom_module/address/preview/file/4498819248a7f824893bd3dac4babdfc'
@@ -239,10 +227,7 @@ class FileProcessorTest extends TestCase
         ];
     }
 
-    /**
-     * @return void
-     */
-    public function testRemoveUploadedFile(): void
+    public function testRemoveUploadedFile()
     {
         $fileName = '/filename.ext1';
 
@@ -255,22 +240,19 @@ class FileProcessorTest extends TestCase
         $this->assertTrue($model->removeUploadedFile($fileName));
     }
 
-    /**
-     * @return void
-     */
-    public function testSaveTemporaryFile(): void
+    public function testSaveTemporaryFile()
     {
         $attributeCode = 'img1';
 
         $allowedExtensions = [
             'ext1',
-            'ext2'
+            'ext2',
         ];
 
         $absolutePath = '/absolute/filepath';
 
         $expectedResult = [
-            'file' => 'filename.ext1'
+            'file' => 'filename.ext1',
         ];
         $resultWithPath = [
             'file' => 'filename.ext1',
@@ -317,10 +299,7 @@ class FileProcessorTest extends TestCase
         $this->assertEquals($expectedResult, $result);
     }
 
-    /**
-     * @return void
-     */
-    public function testSaveTemporaryFileWithError(): void
+    public function testSaveTemporaryFileWithError()
     {
         $this->expectException(LocalizedException::class);
         $this->expectExceptionMessage('File can not be saved to the destination folder.');
@@ -329,7 +308,7 @@ class FileProcessorTest extends TestCase
 
         $allowedExtensions = [
             'ext1',
-            'ext2'
+            'ext2',
         ];
 
         $absolutePath = '/absolute/filepath';
@@ -372,10 +351,7 @@ class FileProcessorTest extends TestCase
         $model->saveTemporaryFile('customer[' . $attributeCode . ']');
     }
 
-    /**
-     * @return void
-     */
-    public function testMoveTemporaryFileUnableToCreateDirectory(): void
+    public function testMoveTemporaryFileUnableToCreateDirectory()
     {
         $this->expectException(LocalizedException::class);
         $this->expectExceptionMessage('Unable to create directory customer/f/i');
@@ -390,10 +366,7 @@ class FileProcessorTest extends TestCase
         $model->moveTemporaryFile($filePath);
     }
 
-    /**
-     * @return void
-     */
-    public function testMoveTemporaryFileDestinationFolderDoesNotExists(): void
+    public function testMoveTemporaryFileDestinationFolderDoesNotExists()
     {
         $this->expectException(LocalizedException::class);
         $this->expectExceptionMessage('Destination folder is not writable or does not exists');
@@ -412,10 +385,7 @@ class FileProcessorTest extends TestCase
         $model->moveTemporaryFile($filePath);
     }
 
-    /**
-     * @return void
-     */
-    public function testMoveTemporaryFile(): void
+    public function testMoveTemporaryFile()
     {
         $filePath = '/filename.ext1';
 
@@ -451,10 +421,7 @@ class FileProcessorTest extends TestCase
         $this->assertEquals('/f/i' . $filePath, $model->moveTemporaryFile($filePath));
     }
 
-    /**
-     * @return void
-     */
-    public function testMoveTemporaryFileNewFileName(): void
+    public function testMoveTemporaryFileNewFileName()
     {
         $filePath = '/filename.ext1';
 
@@ -489,10 +456,7 @@ class FileProcessorTest extends TestCase
         $this->assertEquals('/f/i/filename_2.ext1', $model->moveTemporaryFile($filePath));
     }
 
-    /**
-     * @return void
-     */
-    public function testMoveTemporaryFileWithException(): void
+    public function testMoveTemporaryFileWithException()
     {
         $objectManagerMock = $this->getMockForAbstractClass(ObjectManagerInterface::class);
         $mockFileSystem = $this->createMock(Filesystem::class);
@@ -531,10 +495,7 @@ class FileProcessorTest extends TestCase
         $model->moveTemporaryFile($filePath);
     }
 
-    /**
-     * @return void
-     */
-    public function testGetMimeType(): void
+    public function testGetMimeType()
     {
         $fileName = '/filename.ext1';
         $absoluteFilePath = '/absolute_path/customer/filename.ext1';
@@ -561,15 +522,17 @@ class FileProcessorTest extends TestCase
      *
      * @param string $destinationPath
      * @param bool $directoryCreated
-     *
-     * @return void
      */
     private function configureMediaDirectoryMock(string $destinationPath, bool $directoryCreated): void
     {
-        $this->mediaDirectory
+        $this->mediaDirectory->expects($this->at(0))
             ->method('isExist')
-            ->withConsecutive(['customer/tmp/filename.ext1'], ['customer/filename.ext1'])
-            ->willReturnOnConsecutiveCalls(true, false);
+            ->with('customer/tmp/filename.ext1')
+            ->willReturn(true);
+        $this->mediaDirectory->expects($this->at(1))
+            ->method('isExist')
+            ->with('customer/filename.ext1')
+            ->willReturn(false);
         $this->mediaDirectory->expects($this->once())
             ->method('create')
             ->with($destinationPath)

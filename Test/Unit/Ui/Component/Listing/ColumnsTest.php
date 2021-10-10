@@ -20,44 +20,27 @@ use PHPUnit\Framework\TestCase;
 
 class ColumnsTest extends TestCase
 {
-    /**
-     * @var ContextInterface|MockObject
-     */
+    /** @var ContextInterface|MockObject */
     protected $context;
 
-    /**
-     * @var ColumnFactory|MockObject
-     */
+    /** @var ColumnFactory|MockObject */
     protected $columnFactory;
 
-    /**
-     * @var AttributeRepository|MockObject
-     */
+    /** @var AttributeRepository|MockObject */
     protected $attributeRepository;
 
-    /**
-     * @var Attribute|MockObject
-     */
+    /** @var Attribute|MockObject */
     protected $attribute;
 
-    /**
-     * @var ColumnInterface|MockObject
-     */
+    /** @var ColumnInterface|MockObject */
     protected $column;
 
-    /**
-     * @var InlineEditUpdater|MockObject
-     */
+    /** @var InlineEditUpdater|MockObject */
     protected $inlineEditUpdater;
 
-    /**
-     * @var Columns
-     */
+    /** @var Columns */
     protected $component;
 
-    /**
-     * @inheritdoc
-     */
     protected function setUp(): void
     {
         $this->context = $this->getMockBuilder(ContextInterface::class)
@@ -94,10 +77,7 @@ class ColumnsTest extends TestCase
         );
     }
 
-    /**
-     * @return void
-     */
-    public function testPrepareWithAddColumn(): void
+    public function testPrepareWithAddColumn()
     {
         $attributeCode = 'attribute_code';
 
@@ -122,7 +102,7 @@ class ColumnsTest extends TestCase
                         'is_searchable_in_grid' => true,
                         'validation_rules' => [],
                         'required'=> false,
-                        'entity_type_code' => 'customer_address'
+                        'entity_type_code' => 'customer_address',
                     ]
                 ]
             );
@@ -135,10 +115,7 @@ class ColumnsTest extends TestCase
         $this->component->prepare();
     }
 
-    /**
-     * @return void
-     */
-    public function testPrepareWithUpdateColumn(): void
+    public function testPrepareWithUpdateColumn()
     {
         $attributeCode = 'billing_attribute_code';
         $backendType = 'backend-type';
@@ -159,7 +136,7 @@ class ColumnsTest extends TestCase
             'is_searchable_in_grid' => true,
             'validation_rules' => [],
             'required'=> false,
-            'entity_type_code' => 'customer'
+            'entity_type_code' => 'customer',
         ];
 
         $this->attributeRepository->expects($this->atLeastOnce())
@@ -174,28 +151,28 @@ class ColumnsTest extends TestCase
             ->method('getData')
             ->with('config')
             ->willReturn([]);
-        $this->column
+        $this->column->expects($this->at(3))
             ->method('setData')
-            ->withConsecutive(
+            ->with(
+                'config',
                 [
-                    'config',
-                    [
-                        'options' => [
-                            [
-                                'label' => 'Label',
-                                'value' => 'Value'
-                            ]
+                    'options' => [
+                        [
+                            'label' => 'Label',
+                            'value' => 'Value'
                         ]
                     ]
-                ],
+                ]
+            );
+        $this->column->expects($this->at(5))
+            ->method('setData')
+            ->with(
+                'config',
                 [
-                    'config',
-                    [
-                        'name' => $attributeCode,
-                        'dataType' => $backendType,
-                        'filter' => 'text',
-                        'visible' => true
-                    ]
+                    'name' => $attributeCode,
+                    'dataType' => $backendType,
+                    'filter' => 'text',
+                    'visible' => true
                 ]
             );
 
@@ -203,10 +180,7 @@ class ColumnsTest extends TestCase
         $this->component->prepare();
     }
 
-    /**
-     * @return void
-     */
-    public function testPrepareWithUpdateStaticColumn(): void
+    public function testPrepareWithUpdateStaticColumn()
     {
         $attributeCode = 'billing_attribute_code';
         $backendType = 'static';
@@ -227,7 +201,7 @@ class ColumnsTest extends TestCase
             'is_searchable_in_grid' => true,
             'validation_rules' => [],
             'required'=> false,
-            'entity_type_code' => 'customer'
+            'entity_type_code' => 'customer',
         ];
         $this->inlineEditUpdater->expects($this->once())
             ->method('applyEditing')
@@ -244,28 +218,30 @@ class ColumnsTest extends TestCase
         $this->column->expects($this->atLeastOnce())
             ->method('getData')
             ->with('config')
-            ->willReturn(['editor' => 'text']);
-        $this->column
+            ->willReturn([
+                'editor' => 'text'
+            ]);
+        $this->column->expects($this->at(3))
             ->method('setData')
-            ->withConsecutive(
+            ->with(
+                'config',
                 [
-                    'config',
-                    [
-                        'editor' => 'text',
-                        'options' => [
-                            [
-                                'label' => 'Label',
-                                'value' => 'Value'
-                            ]
+                    'editor' => 'text',
+                    'options' => [
+                        [
+                            'label' => 'Label',
+                            'value' => 'Value'
                         ]
                     ]
-                ],
+                ]
+            );
+        $this->column->expects($this->at(6))
+            ->method('setData')
+            ->with(
+                'config',
                 [
-                    'config',
-                    [
-                        'editor' => 'text',
-                        'visible' => true
-                    ]
+                    'editor' => 'text',
+                    'visible' => true
                 ]
             );
 

@@ -19,58 +19,59 @@ use PHPUnit\Framework\TestCase;
 class AddCustomerGroupExcludedWebsiteTest extends TestCase
 {
     /** @var GroupExcludedWebsiteRepositoryInterface|MockObject */
-    private $groupExcludedWebsiteRepositoryMock;
+    private $groupExcludedWebsiteRepository;
 
     /** @var Collection */
-    private $ruleCollectionMock;
+    private $ruleCollection;
 
     /** @var Rule */
-    private $ruleMock;
+    private $rule;
 
     /** @var RuleExtension */
-    private $ruleExtensionMock;
+    private $ruleExtension;
 
     /** @var Observer */
-    private $observerMock;
+    private $observer;
 
     /** @var AddCustomerGroupExcludedWebsite */
-    private $observer;
+    protected $addCustomerGroupExcludedWebsiteObserver;
 
     protected function setUp(): void
     {
-        $this->groupExcludedWebsiteRepositoryMock = $this->getMockBuilder(GroupExcludedWebsiteRepositoryInterface::class)
+        $this->groupExcludedWebsiteRepository = $this->getMockBuilder(GroupExcludedWebsiteRepositoryInterface::class)
             ->getMockForAbstractClass();
-        $this->observerMock = $this->getMockBuilder(Observer::class)
+        $this->observer = $this->getMockBuilder(Observer::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $this->ruleCollectionMock = $this->getMockBuilder(Collection::class)
+        $this->ruleCollection = $this->getMockBuilder(Collection::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $this->ruleMock = $this->getMockBuilder(Rule::class)
+        $this->rule = $this->getMockBuilder(Rule::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $this->ruleExtensionMock = $this->getMockBuilder(RuleExtension::class)
-            ->addMethods(['setExcludeWebsiteIds'])
+        $this->ruleExtension = $this->getMockBuilder(RuleExtension::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $this->observerMock->expects(self::atLeastOnce())
+        $this->observer->expects(self::atLeastOnce())
             ->method('getData')
-            ->willReturn($this->ruleCollectionMock);
+            ->willReturn($this->ruleCollection);
 
-        $this->observer = new AddCustomerGroupExcludedWebsite($this->groupExcludedWebsiteRepositoryMock);
+        $this->addCustomerGroupExcludedWebsiteObserver = new AddCustomerGroupExcludedWebsite(
+            $this->groupExcludedWebsiteRepository
+        );
     }
 
     public function testExecuteWithoutCatalogRules(): void
     {
-        $this->ruleCollectionMock->expects(self::once())
+        $this->ruleCollection->expects(self::once())
             ->method('getItems')
             ->willReturn([]);
 
-        $this->groupExcludedWebsiteRepositoryMock->expects(self::never())
+        $this->groupExcludedWebsiteRepository->expects(self::never())
             ->method('getAllExcludedWebsites')
             ->willReturn([]);
 
-        $this->observer->execute($this->observerMock);
+        $this->addCustomerGroupExcludedWebsiteObserver->execute($this->observer);
     }
 
     public function testExecuteWithCustomerGroupExcludedWebsites(): void
@@ -79,33 +80,33 @@ class AddCustomerGroupExcludedWebsiteTest extends TestCase
             1 => [2],
             3 => [1]
         ];
-        $this->ruleCollectionMock->expects(self::once())
+        $this->ruleCollection->expects(self::once())
             ->method('getItems')
-            ->willReturn([$this->ruleMock]);
+            ->willReturn([$this->rule]);
 
-        $this->groupExcludedWebsiteRepositoryMock->expects(self::once())
+        $this->groupExcludedWebsiteRepository->expects(self::once())
             ->method('getAllExcludedWebsites')
             ->willReturn($excludedWebsites);
 
-        $this->ruleMock->expects(self::once())
+        $this->rule->expects(self::once())
             ->method('getIsActive')
             ->willReturn(true);
-        $this->ruleMock->expects(self::once())
+        $this->rule->expects(self::once())
             ->method('getCustomerGroupIds')
             ->willReturn([1, 2, 3, 4]);
 
-        $this->ruleMock->expects(self::once())
+        $this->rule->expects(self::once())
             ->method('getExtensionAttributes')
-            ->willReturn($this->ruleExtensionMock);
-        $this->ruleExtensionMock->expects(self::once())
+            ->willReturn($this->ruleExtension);
+        $this->ruleExtension->expects(self::once())
             ->method('setExcludeWebsiteIds')
             ->with($excludedWebsites)
             ->willReturnSelf();
-        $this->ruleMock->expects(self::once())
+        $this->rule->expects(self::once())
             ->method('setExtensionAttributes')
-            ->with($this->ruleExtensionMock)
+            ->with($this->ruleExtension)
             ->willReturnSelf();
 
-        $this->observer->execute($this->observerMock);
+        $this->addCustomerGroupExcludedWebsiteObserver->execute($this->observer);
     }
 }

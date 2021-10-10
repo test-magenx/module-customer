@@ -80,7 +80,6 @@ class DataProviderWithDefaultAddressesTest extends TestCase
 
     /**
      * @inheritdoc
-     *
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     protected function setUp(): void
@@ -88,12 +87,11 @@ class DataProviderWithDefaultAddressesTest extends TestCase
         $this->eavConfigMock = $this->getMockBuilder(Config::class)->disableOriginalConstructor()->getMock();
         $this->customerCollectionFactoryMock = $this->createPartialMock(CustomerCollectionFactory::class, ['create']);
         $this->sessionMock = $this->getMockBuilder(SessionManagerInterface::class)
-            ->addMethods(['getCustomerFormData', 'unsCustomerFormData'])
+            ->setMethods(['getCustomerFormData', 'unsCustomerFormData'])
             ->getMockForAbstractClass();
         $this->countryFactoryMock = $this->getMockBuilder(CountryFactory::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['create'])
-            ->addMethods(['loadByCode','getName'])
+            ->setMethods(['create', 'loadByCode', 'getName'])
             ->getMock();
         $this->customerMock = $this->getMockBuilder(Customer::class)
             ->disableOriginalConstructor()
@@ -114,11 +112,11 @@ class DataProviderWithDefaultAddressesTest extends TestCase
             ->getMock();
         $this->attributeMetadataResolver = $this->getMockBuilder(AttributeMetadataResolver::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['getAttributesMeta'])
+            ->setMethods(['getAttributesMeta'])
             ->getMock();
-        $this->attributeMetadataResolver
+        $this->attributeMetadataResolver->expects($this->at(0))
             ->method('getAttributesMeta')
-            ->willReturnOnConsecutiveCalls(
+            ->willReturn(
                 [
                     'arguments' => [
                         'data' => [
@@ -133,11 +131,15 @@ class DataProviderWithDefaultAddressesTest extends TestCase
                                 'notice' => 'note',
                                 'default' => 'default_value',
                                 'size' => 'multiline_count',
-                                'componentType' => Field::NAME
-                            ]
-                        ]
-                    ]
-                ],
+                                'componentType' => Field::NAME,
+                            ],
+                        ],
+                    ],
+                ]
+            );
+        $this->attributeMetadataResolver->expects($this->at(1))
+            ->method('getAttributesMeta')
+            ->willReturn(
                 [
                     'arguments' => [
                         'data' => [
@@ -155,11 +157,11 @@ class DataProviderWithDefaultAddressesTest extends TestCase
                                 'prefer' => 'toggle',
                                 'valueMap' => [
                                     'true' => 1,
-                                    'false' => 0
-                                ]
-                            ]
-                        ]
-                    ]
+                                    'false' => 0,
+                                ],
+                            ],
+                        ],
+                    ],
                 ]
             );
 
@@ -176,7 +178,7 @@ class DataProviderWithDefaultAddressesTest extends TestCase
                 'session' => $this->sessionMock,
                 'fileUploaderDataResolver' => $this->fileUploaderDataResolver,
                 'attributeMetadataResolver' => $this->attributeMetadataResolver,
-                'allowToShowHiddenAttributes' => true
+                'allowToShowHiddenAttributes' => true,
             ]
         );
     }
@@ -222,10 +224,10 @@ class DataProviderWithDefaultAddressesTest extends TestCase
                                             'notice' => 'note',
                                             'default' => 'default_value',
                                             'size' => 'multiline_count',
-                                            'componentType' => Field::NAME
-                                        ]
-                                    ]
-                                ]
+                                            'componentType' => Field::NAME,
+                                        ],
+                                    ],
+                                ],
                             ],
                             'test-code-boolean' => [
                                 'arguments' => [
@@ -244,14 +246,14 @@ class DataProviderWithDefaultAddressesTest extends TestCase
                                             'prefer' => 'toggle',
                                             'valueMap' => [
                                                 'true' => 1,
-                                                'false' => 0
-                                            ]
-                                        ]
-                                    ]
-                                ]
-                            ]
-                        ]
-                    ]
+                                                'false' => 0,
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
                 ]
             ]
         ];
@@ -261,7 +263,7 @@ class DataProviderWithDefaultAddressesTest extends TestCase
      * @param array $customerAttributes
      * @return Type|MockObject
      */
-    protected function getTypeCustomerMock($customerAttributes = []): Type
+    protected function getTypeCustomerMock($customerAttributes = [])
     {
         $typeCustomerMock = $this->getMockBuilder(Type::class)
             ->disableOriginalConstructor()
@@ -284,20 +286,21 @@ class DataProviderWithDefaultAddressesTest extends TestCase
      * @param array $options
      * @return AbstractAttribute[]|MockObject[]
      */
-    protected function getAttributeMock(array $options = []): array
+    protected function getAttributeMock($options = []): array
     {
         $attributeMock = $this->getMockBuilder(AbstractAttribute::class)
-            ->onlyMethods(
+            ->setMethods(
                 [
                     'getAttributeCode',
                     'getDataUsingMethod',
                     'getFrontendInput',
+                    'getIsVisible',
                     'getSource',
                     'getIsUserDefined',
-                    'getEntityType'
+                    'getUsedInForms',
+                    'getEntityType',
                 ]
             )
-            ->addMethods(['getIsVisible', 'getUsedInForms'])
             ->disableOriginalConstructor()
             ->getMockForAbstractClass();
 
@@ -311,17 +314,18 @@ class DataProviderWithDefaultAddressesTest extends TestCase
             ->willReturn($attributeCode);
 
         $attributeBooleanMock = $this->getMockBuilder(AbstractAttribute::class)
-            ->onlyMethods(
+            ->setMethods(
                 [
                     'getAttributeCode',
                     'getDataUsingMethod',
                     'getFrontendInput',
+                    'getIsVisible',
                     'getIsUserDefined',
+                    'getUsedInForms',
                     'getSource',
-                    'getEntityType'
+                    'getEntityType',
                 ]
             )
-            ->addMethods(['getIsVisible', 'getUsedInForms'])
             ->disableOriginalConstructor()
             ->getMockForAbstractClass();
 
@@ -349,14 +353,14 @@ class DataProviderWithDefaultAddressesTest extends TestCase
             'default_billing' => 2,
             'default_shipping' => 2,
             'password_hash' => 'password_hash',
-            'rp_token' => 'rp_token'
+            'rp_token' => 'rp_token',
         ];
         $addressData = [
             'country_id' => 'code',
             'entity_id' => 2,
             'parent_id' => $customerId,
             'street' => "line 1\nline 2",
-            'region' => 'Region Name'
+            'region' => 'Region Name',
         ];
         $localeRegionName = 'Locale Region Name';
 
@@ -391,7 +395,7 @@ class DataProviderWithDefaultAddressesTest extends TestCase
                     'customer' => [
                         'email' => 'test@test.ua',
                         'default_billing' => 2,
-                        'default_shipping' => 2
+                        'default_shipping' => 2,
                     ],
                     'default_billing_address' => [
                         'country' => 'Ukraine',
@@ -399,7 +403,7 @@ class DataProviderWithDefaultAddressesTest extends TestCase
                         'entity_id' => 2,
                         'parent_id' => $customerId,
                         'street' => ['line 1', 'line 2'],
-                        'region' => $localeRegionName
+                        'region' => $localeRegionName,
                     ],
                     'default_shipping_address' => [],
                     'customer_id' => $customerId
@@ -420,7 +424,7 @@ class DataProviderWithDefaultAddressesTest extends TestCase
                 'email' => 'test1@test1.ua',
                 'default_billing' => 3,
                 'default_shipping' => 3,
-                'entity_id' => $customerId
+                'entity_id' => $customerId,
             ],
             'address' => [
                 3 => [
@@ -428,10 +432,10 @@ class DataProviderWithDefaultAddressesTest extends TestCase
                     'lastname' => 'lastname1',
                     'street' => [
                         'street1',
-                        'street2'
+                        'street2',
                     ],
                     'default_billing' => 3,
-                    'default_shipping' => 3
+                    'default_shipping' => 3,
                 ],
             ],
         ];
@@ -439,13 +443,11 @@ class DataProviderWithDefaultAddressesTest extends TestCase
         $this->customerCollectionMock->expects($this->once())->method('getItems')->willReturn([$this->customerMock]);
         $this->customerMock->expects($this->once())
             ->method('getData')
-            ->willReturn(
-                [
-                    'email' => 'test@test.ua',
-                    'default_billing' => 2,
-                    'default_shipping' => 2
-                ]
-            );
+            ->willReturn([
+                'email' => 'test@test.ua',
+                'default_billing' => 2,
+                'default_shipping' => 2,
+            ]);
         $this->customerMock->expects($this->atLeastOnce())->method('getId')->willReturn($customerId);
 
         $this->sessionMock->expects($this->once())->method('getCustomerFormData')->willReturn($customerFormData);

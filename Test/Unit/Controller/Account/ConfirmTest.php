@@ -123,9 +123,6 @@ class ConfirmTest extends TestCase
      */
     protected $redirectResultMock;
 
-    /**
-     * @inheritdoc
-     */
     protected function setUp(): void
     {
         $this->customerSessionMock = $this->createMock(Session::class);
@@ -195,15 +192,12 @@ class ConfirmTest extends TestCase
                 'customerAccountManagement' => $this->customerAccountManagementMock,
                 'customerRepository' => $this->customerRepositoryMock,
                 'addressHelper' => $this->addressHelperMock,
-                'urlFactory' => $urlFactoryMock
+                'urlFactory' => $urlFactoryMock,
             ]
         );
     }
 
-    /**
-     * @return void
-     */
-    public function testIsLoggedIn(): void
+    public function testIsLoggedIn()
     {
         $this->customerSessionMock->expects($this->once())
             ->method('isLoggedIn')
@@ -218,19 +212,22 @@ class ConfirmTest extends TestCase
     }
 
     /**
-     * @return void
      * @dataProvider getParametersDataProvider
      */
-    public function testNoCustomerIdInRequest($customerId, $key): void
+    public function testNoCustomerIdInRequest($customerId, $key)
     {
         $this->customerSessionMock->expects($this->once())
             ->method('isLoggedIn')
             ->willReturn(false);
 
-        $this->requestMock
+        $this->requestMock->expects($this->at(0))
             ->method('getParam')
-            ->withConsecutive(['id', false], ['key', false])
-            ->willReturnOnConsecutiveCalls($customerId, $key);
+            ->with('id', false)
+            ->willReturn($customerId);
+        $this->requestMock->expects($this->at(1))
+            ->method('getParam')
+            ->with('key', false)
+            ->willReturn($key);
 
         $this->messageManagerMock->expects($this->once())
             ->method('addErrorMessage')
@@ -258,7 +255,7 @@ class ConfirmTest extends TestCase
     /**
      * @return array
      */
-    public function getParametersDataProvider(): array
+    public function getParametersDataProvider()
     {
         return [
             [true, false],
@@ -272,17 +269,11 @@ class ConfirmTest extends TestCase
      * @param $vatValidationEnabled
      * @param $addressType
      * @param Phrase $successMessage
-     *
-     * @return void
+     * @throws \ReflectionException
      * @dataProvider getSuccessMessageDataProvider
      */
-    public function testSuccessMessage(
-        $customerId,
-        $key,
-        $vatValidationEnabled,
-        $addressType,
-        Phrase $successMessage
-    ): void {
+    public function testSuccessMessage($customerId, $key, $vatValidationEnabled, $addressType, Phrase $successMessage)
+    {
         $this->customerSessionMock->expects($this->once())
             ->method('isLoggedIn')
             ->willReturn(false);
@@ -292,7 +283,7 @@ class ConfirmTest extends TestCase
             ->willReturnMap(
                 [
                     ['id', false, $customerId],
-                    ['key', false, $key]
+                    ['key', false, $key],
                 ]
             );
 
@@ -384,7 +375,7 @@ class ConfirmTest extends TestCase
     /**
      * @return array
      */
-    public function getSuccessMessageDataProvider(): array
+    public function getSuccessMessageDataProvider()
     {
         return [
             [1, 1, false, null, __('Thank you for registering with %1.', 'frontend')],
@@ -409,7 +400,7 @@ class ConfirmTest extends TestCase
                     . ' to enter your shipping address for proper VAT calculation.',
                     'http://store.web/customer/address/edit'
                 )
-            ]
+            ],
         ];
     }
 
@@ -421,8 +412,7 @@ class ConfirmTest extends TestCase
      * @param $resultUrl
      * @param $isSetFlag
      * @param Phrase $successMessage
-     *
-     * @return void
+     * @throws \ReflectionException
      * @dataProvider getSuccessRedirectDataProvider
      */
     public function testSuccessRedirect(
@@ -433,7 +423,7 @@ class ConfirmTest extends TestCase
         $resultUrl,
         $isSetFlag,
         Phrase $successMessage
-    ): void {
+    ) {
         $this->customerSessionMock->expects($this->once())
             ->method('isLoggedIn')
             ->willReturn(false);
@@ -444,7 +434,7 @@ class ConfirmTest extends TestCase
                 [
                     ['id', false, $customerId],
                     ['key', false, $key],
-                    ['back_url', false, $backUrl]
+                    ['back_url', false, $backUrl],
                 ]
             );
 
@@ -524,7 +514,7 @@ class ConfirmTest extends TestCase
     /**
      * @return array
      */
-    public function getSuccessRedirectDataProvider(): array
+    public function getSuccessRedirectDataProvider()
     {
         return [
             [
@@ -553,7 +543,7 @@ class ConfirmTest extends TestCase
                 'http://example.com/success',
                 false,
                 __('Thank you for registering with %1.', 'frontend'),
-            ]
+            ],
         ];
     }
 }

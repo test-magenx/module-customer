@@ -14,8 +14,6 @@ use Magento\Customer\Helper\Address;
 $addressHelper = $block->getData('addressHelper');
 /** @var \Magento\Directory\Helper\Data $directoryHelper */
 $directoryHelper = $block->getData('directoryHelper');
-/** @var \Magento\Customer\ViewModel\Address\RegionProvider $regionProvider */
-$regionProvider = $block->getRegionProvider();
 $formData = $block->getFormData();
 ?>
 <?php $displayAll = $block->getConfig('general/region/display_all'); ?>
@@ -344,22 +342,22 @@ script;
 <?= /* @noEscape */ $secureRenderer->renderTag('script', [], $scriptString, false) ?>
 <?php if ($block->getShowAddressFields()): ?>
     <?php
-    $regionJson = /* @noEscape */ $regionProvider->getRegionJson();
+    $regionJson = /* @noEscape */ $directoryHelper->getRegionJson();
     $regionId = (int) $formData->getRegionId();
     $countriesWithOptionalZip = /* @noEscape */ $directoryHelper->getCountriesWithOptionalZip(true);
     ?>
 <script type="text/x-magento-init">
     {
         "#country": {
-            "directoryRegionUpdater": {
+            "regionUpdater": {
                 "optionalRegionAllowed": <?= /* @noEscape */ $displayAll ? 'true' : 'false' ?>,
                 "regionListId": "#region_id",
                 "regionInputId": "#region",
                 "postcodeId": "#zip",
                 "form": "#form-validate",
-                "regionJson": <?= /* @noEscape */ $regionJson ?>,
-                "defaultRegion": <?= /* @noEscape */ $regionId ?>,
-                "countriesWithOptionalZip": <?=  /* @noEscape */ $countriesWithOptionalZip ?>
+                "regionJson": <?= $regionJson ?>,
+                "defaultRegion": <?= $regionId ?>,
+                "countriesWithOptionalZip": <?= $countriesWithOptionalZip ?>
             }
         }
     }

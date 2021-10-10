@@ -56,7 +56,7 @@ class AttributeMetadataResolverTest extends TestCase
     private $context;
 
     /**
-     * @var AttributeMetadataResolver
+     * @var  AttributeMetadataResolver
      */
     private $model;
 
@@ -66,20 +66,20 @@ class AttributeMetadataResolverTest extends TestCase
     private $attribute;
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function setUp(): void
     {
         $this->countryWithWebsiteSource = $this->getMockBuilder(CountryWithWebsites::class)
-            ->onlyMethods(['getAllOptions'])
+            ->setMethods(['getAllOptions'])
             ->disableOriginalConstructor()
             ->getMock();
         $this->eavValidationRules = $this->getMockBuilder(EavValidationRules::class)
-            ->onlyMethods(['build'])
+            ->setMethods(['build'])
             ->disableOriginalConstructor()
             ->getMock();
         $this->fileUploaderDataResolver = $this->getMockBuilder(FileUploaderDataResolver::class)
-            ->onlyMethods(['overrideFileUploaderMetadata'])
+            ->setMethods(['overrideFileUploaderMetadata'])
             ->disableOriginalConstructor()
             ->getMock();
         $this->context =  $this->getMockBuilder(ContextInterface::class)
@@ -89,21 +89,18 @@ class AttributeMetadataResolverTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $this->groupManagement =  $this->getMockBuilder(GroupManagement::class)
-            ->onlyMethods(['getDefaultGroup'])
-            ->addMethods(['getId'])
+            ->setMethods(['getId', 'getDefaultGroup'])
             ->disableOriginalConstructor()
             ->getMock();
         $this->attribute = $this->getMockBuilder(Attribute::class)
-            ->onlyMethods(
-                [
-                    'usesSource',
-                    'getDataUsingMethod',
-                    'getAttributeCode',
-                    'getFrontendInput',
-                    'getSource',
-                    'setDataUsingMethod'
-                ]
-            )
+            ->setMethods([
+                'usesSource',
+                'getDataUsingMethod',
+                'getAttributeCode',
+                'getFrontendInput',
+                'getSource',
+                'setDataUsingMethod'
+            ])
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -118,7 +115,7 @@ class AttributeMetadataResolverTest extends TestCase
     }
 
     /**
-     * Test to get meta data of the customer or customer address attribute.
+     * Test to get meta data of the customer or customer address attribute
      *
      * @return void
      */
@@ -145,10 +142,10 @@ class AttributeMetadataResolverTest extends TestCase
         $this->groupManagement->expects($this->once())
             ->method('getId')
             ->willReturn($defaultGroupId);
-        $this->attribute
+        $this->attribute->expects($this->at(9))
             ->method('getDataUsingMethod')
-            ->withConsecutive([], [], [], [], [], [], ['default_value'])
-            ->willReturnOnConsecutiveCalls(null, null, null, null, null, null, $defaultGroupId);
+            ->with('default_value')
+            ->willReturn($defaultGroupId);
         $this->attribute->expects($this->once())
             ->method('setDataUsingMethod')
             ->willReturnSelf();

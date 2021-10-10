@@ -58,8 +58,8 @@ class DataProviderTest extends TestCase
      */
     private $eavConfig;
 
-    /**
-     * @var ContextInterface|MockObject
+    /*
+     * @var ContextInterface|\PHPUnit\Framework\MockObject\MockObject
      */
     private $context;
 
@@ -83,9 +83,6 @@ class DataProviderTest extends TestCase
      */
     private $model;
 
-    /**
-     * @inheritdoc
-     */
     protected function setUp(): void
     {
         $objectManagerHelper = new ObjectManager($this);
@@ -97,7 +94,7 @@ class DataProviderTest extends TestCase
             ->getMock();
         $this->addressCollectionFactory = $this->getMockBuilder(CollectionFactory::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['create'])
+            ->setMethods(['create'])
             ->getMock();
         $this->collection = $this->getMockBuilder(AddressCollection::class)
             ->disableOriginalConstructor()
@@ -118,9 +115,9 @@ class DataProviderTest extends TestCase
         $this->address = $this->getMockBuilder(AddressModel::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $this->attributeMetadataResolver
+        $this->attributeMetadataResolver->expects($this->at(0))
             ->method('getAttributesMeta')
-            ->willReturnOnConsecutiveCalls(
+            ->willReturn(
                 [
                     'arguments' => [
                         'data' => [
@@ -134,11 +131,15 @@ class DataProviderTest extends TestCase
                                 'sortOrder' => 'sort_order',
                                 'default' => 'default_value',
                                 'size' => 'multiline_count',
-                                'componentType' => Field::NAME
-                            ]
-                        ]
-                    ]
-                ],
+                                'componentType' => Field::NAME,
+                            ],
+                        ],
+                    ],
+                ]
+            );
+        $this->attributeMetadataResolver->expects($this->at(1))
+            ->method('getAttributesMeta')
+            ->willReturn(
                 [
                     'arguments' => [
                         'data' => [
@@ -155,19 +156,19 @@ class DataProviderTest extends TestCase
                                 'prefer' => 'toggle',
                                 'valueMap' => [
                                     'true' => 1,
-                                    'false' => 0
-                                ]
-                            ]
-                        ]
-                    ]
+                                    'false' => 0,
+                                ],
+                            ],
+                        ],
+                    ],
                 ]
             );
         $this->model = $objectManagerHelper->getObject(
             DataProvider::class,
             [
-                'name' => 'test-name',
-                'primaryFieldName' => 'primary-field-name',
-                'requestFieldName' => 'request-field-name',
+                'name'                      => 'test-name',
+                'primaryFieldName'          => 'primary-field-name',
+                'requestFieldName'          => 'request-field-name',
                 'addressCollectionFactory' => $this->addressCollectionFactory,
                 'customerRepository' => $this->customerRepository,
                 'eavConfig' => $this->eavConfig,
@@ -181,9 +182,6 @@ class DataProviderTest extends TestCase
         );
     }
 
-    /**
-     * @return void
-     */
     public function testGetDefaultData(): void
     {
         $expectedData = [
@@ -214,9 +212,6 @@ class DataProviderTest extends TestCase
         $this->assertEquals($expectedData, $this->model->getData());
     }
 
-    /**
-     * @return void
-     */
     public function testGetData(): void
     {
         $expectedData = [
@@ -277,7 +272,7 @@ class DataProviderTest extends TestCase
      * @param array $customerAttributes
      * @return Type|MockObject
      */
-    protected function getTypeAddressMock(array $customerAttributes = []): Type
+    protected function getTypeAddressMock($customerAttributes = [])
     {
         $typeAddressMock = $this->getMockBuilder(Type::class)
             ->disableOriginalConstructor()
@@ -300,23 +295,23 @@ class DataProviderTest extends TestCase
      * Get attribute mock
      *
      * @param array $options
-     *
      * @return AbstractAttribute[]|MockObject[]
      */
-    protected function getAttributeMock(array $options = []): array
+    protected function getAttributeMock($options = []): array
     {
         $attributeMock = $this->getMockBuilder(AbstractAttribute::class)
-            ->onlyMethods(
+            ->setMethods(
                 [
                     'getAttributeCode',
                     'getDataUsingMethod',
                     'getFrontendInput',
+                    'getIsVisible',
                     'getSource',
                     'getIsUserDefined',
-                    'getEntityType'
+                    'getUsedInForms',
+                    'getEntityType',
                 ]
             )
-            ->addMethods(['getIsVisible', 'getUsedInForms'])
             ->disableOriginalConstructor()
             ->getMockForAbstractClass();
 
@@ -330,17 +325,18 @@ class DataProviderTest extends TestCase
             ->willReturn($attributeCode);
 
         $attributeBooleanMock = $this->getMockBuilder(AbstractAttribute::class)
-            ->onlyMethods(
+            ->setMethods(
                 [
                     'getAttributeCode',
                     'getDataUsingMethod',
                     'getFrontendInput',
+                    'getIsVisible',
                     'getIsUserDefined',
+                    'getUsedInForms',
                     'getSource',
-                    'getEntityType'
+                    'getEntityType',
                 ]
             )
-            ->addMethods(['getIsVisible', 'getUsedInForms'])
             ->disableOriginalConstructor()
             ->getMockForAbstractClass();
 
@@ -354,7 +350,6 @@ class DataProviderTest extends TestCase
             ->willReturn($booleanAttributeCode);
 
         $mocks = [$attributeMock, $attributeBooleanMock];
-
         return $mocks;
     }
 }

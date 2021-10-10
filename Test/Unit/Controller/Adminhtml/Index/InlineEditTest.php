@@ -40,113 +40,72 @@ use Psr\Log\LoggerInterface;
  */
 class InlineEditTest extends TestCase
 {
-    /**
-     * @var InlineEdit
-     */
+    /** @var InlineEdit */
     private $controller;
 
-    /**
-     * @var Context
-     */
+    /** @var Context */
     private $context;
 
-    /**
-     * @var RequestInterface|MockObject
-     */
+    /** @var RequestInterface|MockObject*/
     private $request;
 
-    /**
-     * @var ManagerInterface|MockObject
-     */
+    /** @var ManagerInterface|MockObject*/
     private $messageManager;
 
-    /**
-     * @var CustomerInterface|MockObject
-     */
+    /** @var CustomerInterface|MockObject*/
     protected $customerData;
 
-    /**
-     * @var AddressInterface|MockObject
-     */
+    /** @var AddressInterface|MockObject*/
     private $address;
 
-    /**
-     * @var JsonFactory|MockObject
-     */
+    /** @var JsonFactory|MockObject*/
     private $resultJsonFactory;
 
-    /**
-     * @var Json|MockObject
-     */
+    /** @var Json|MockObject*/
     private $resultJson;
 
-    /**
-     * @var CustomerRepositoryInterface|MockObject
-     */
+    /** @var CustomerRepositoryInterface|MockObject*/
     private $customerRepository;
 
-    /**
-     * @var Mapper|MockObject
-     */
+    /** @var Mapper|MockObject*/
     private $addressMapper;
 
-    /**
-     * @var \Magento\Customer\Model\Customer\Mapper|MockObject
-     */
+    /** @var \Magento\Customer\Model\Customer\Mapper|MockObject*/
     private $customerMapper;
 
-    /**
-     * @var DataObjectHelper|MockObject
-     */
+    /** @var DataObjectHelper|MockObject*/
     private $dataObjectHelper;
 
-    /**
-     * @var AddressInterfaceFactory|MockObject
-     */
+    /** @var AddressInterfaceFactory|MockObject*/
     private $addressDataFactory;
 
-    /**
-     * @var AddressRepositoryInterface|MockObject
-     */
+    /** @var AddressRepositoryInterface|MockObject*/
     private $addressRepository;
 
-    /**
-     * @var Collection|MockObject
-     */
+    /** @var Collection|MockObject*/
     private $messageCollection;
 
-    /**
-     * @var MessageInterface|MockObject
-     */
+    /** @var MessageInterface|MockObject*/
     private $message;
 
-    /**
-     * @var LoggerInterface|MockObject
-     */
+    /** @var LoggerInterface|MockObject*/
     private $logger;
 
-    /**
-     * @var EmailNotificationInterface|MockObject
-     */
+    /** @var EmailNotificationInterface|MockObject */
     private $emailNotification;
 
-    /**
-     * @var AddressRegistry|MockObject
-     */
+    /** @var AddressRegistry|MockObject */
     private $addressRegistry;
 
-    /**
-     * @var array
-     */
+    /** @var array */
     private $items;
 
-    /**
-     * @var Escaper
-     */
+    /** @var Escaper */
     private $escaper;
 
     /**
-     * @inheritDoc
+     * Sets up mocks
+     *
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     protected function setUp(): void
@@ -239,7 +198,7 @@ class InlineEditTest extends TestCase
                 'addressRepository' => $this->addressRepository,
                 'logger' => $this->logger,
                 'addressRegistry' => $this->addressRegistry,
-                'escaper' => $this->escaper
+                'escaper' => $this->escaper,
             ]
         );
         $reflection = new \ReflectionClass(get_class($this->controller));
@@ -250,25 +209,29 @@ class InlineEditTest extends TestCase
         $this->items = [
             14 => [
                 'email' => 'test@test.ua',
-                'billing_postcode' => '07294'
+                'billing_postcode' => '07294',
             ]
         ];
     }
 
     /**
-     * Prepare mocks for tests.
+     * Prepare mocks for tests
      *
-     * @return void
+     * @param int $populateSequence
      */
-    protected function prepareMocksForTesting(): void
+    protected function prepareMocksForTesting($populateSequence = 0)
     {
         $this->resultJsonFactory->expects($this->once())
             ->method('create')
             ->willReturn($this->resultJson);
-        $this->request
+        $this->request->expects($this->at(0))
             ->method('getParam')
-            ->withConsecutive(['items', []], ['isAjax'])
-            ->willReturnOnConsecutiveCalls($this->items, true);
+            ->with('items', [])
+            ->willReturn($this->items);
+        $this->request->expects($this->at(1))
+            ->method('getParam')
+            ->with('isAjax')
+            ->willReturn(true);
         $this->customerRepository->expects($this->once())
             ->method('getById')
             ->with(14)
@@ -277,19 +240,32 @@ class InlineEditTest extends TestCase
             ->method('toFlatArray')
             ->with($this->customerData)
             ->willReturn(['name' => 'Firstname Lastname']);
+        $this->dataObjectHelper->expects($this->at($populateSequence))
+            ->method('populateWithArray')
+            ->with(
+                $this->customerData,
+                [
+                    'name' => 'Firstname Lastname',
+                    'email' => 'test@test.ua',
+                ],
+                CustomerInterface::class
+            );
         $this->customerData->expects($this->any())
             ->method('getId')
             ->willReturn(12);
     }
 
     /**
-     * Prepare mocks for update customers default billing address use case.
-     *
-     * @return void
+     * Prepare mocks for update customers default billing address use case
      */
-    protected function prepareMocksForUpdateDefaultBilling(): void
+    protected function prepareMocksForUpdateDefaultBilling()
     {
         $this->prepareMocksForProcessAddressData();
+        $addressData = [
+            'postcode' => '07294',
+            'firstname' => 'Firstname',
+            'lastname' => 'Lastname',
+        ];
         $this->customerData->expects($this->exactly(2))
             ->method('getAddresses')
             ->willReturn([$this->address]);
@@ -299,14 +275,19 @@ class InlineEditTest extends TestCase
         $this->addressRegistry->expects($this->once())
             ->method('retrieve')
             ->willReturn(new DataObject());
+        $this->dataObjectHelper->expects($this->at(0))
+            ->method('populateWithArray')
+            ->with(
+                $this->address,
+                $addressData,
+                AddressInterface::class
+            );
     }
 
     /**
-     * Prepare mocks for processing customers address data use case.
-     *
-     * @return void
+     * Prepare mocks for processing customers address data use case
      */
-    protected function prepareMocksForProcessAddressData(): void
+    protected function prepareMocksForProcessAddressData()
     {
         $this->customerData->expects($this->once())
             ->method('getFirstname')
@@ -317,11 +298,9 @@ class InlineEditTest extends TestCase
     }
 
     /**
-     * Prepare mocks for error messages processing test.
-     *
-     * @return void
+     * Prepare mocks for error messages processing test
      */
-    protected function prepareMocksForErrorMessagesProcessing(): void
+    protected function prepareMocksForErrorMessagesProcessing()
     {
         $this->messageManager->expects($this->atLeastOnce())
             ->method('getMessages')
@@ -341,44 +320,20 @@ class InlineEditTest extends TestCase
             ->with(
                 [
                     'messages' => [
-                        'Error text'
+                        'Error text',
                     ],
-                    'error' => true
+                    'error' => true,
                 ]
             )
             ->willReturnSelf();
     }
 
     /**
-     * Unit test for updating customers billing address use case.
-     *
-     * @return void
+     * Unit test for updating customers billing address use case
      */
-    public function testExecuteWithUpdateBilling(): void
+    public function testExecuteWithUpdateBilling()
     {
-        $this->prepareMocksForTesting();
-        $this->dataObjectHelper
-            ->method('populateWithArray')
-            ->withConsecutive(
-                [
-                    $this->address,
-                    [
-                        'postcode' => '07294',
-                        'firstname' => 'Firstname',
-                        'lastname' => 'Lastname'
-                    ],
-                    AddressInterface::class
-                ],
-                [
-                    $this->customerData,
-                    [
-                        'name' => 'Firstname Lastname',
-                        'email' => 'test@test.ua'
-                    ],
-                    CustomerInterface::class
-                ]
-            );
-
+        $this->prepareMocksForTesting(1);
         $this->customerData->expects($this->once())
             ->method('getDefaultBilling')
             ->willReturn(23);
@@ -397,28 +352,30 @@ class InlineEditTest extends TestCase
     }
 
     /**
-     * Unit test for creating customer with empty data use case.
-     *
-     * @return void
+     * Unit test for creating customer with empty data use case
      */
-    public function testExecuteWithoutItems(): void
+    public function testExecuteWithoutItems()
     {
         $this->resultJsonFactory->expects($this->once())
             ->method('create')
             ->willReturn($this->resultJson);
-        $this->request
+        $this->request->expects($this->at(0))
             ->method('getParam')
-            ->withConsecutive(['items', []], ['isAjax'])
-            ->willReturnOnConsecutiveCalls([], false);
+            ->with('items', [])
+            ->willReturn([]);
+        $this->request->expects($this->at(1))
+            ->method('getParam')
+            ->with('isAjax')
+            ->willReturn(false);
         $this->resultJson
             ->expects($this->once())
             ->method('setData')
             ->with(
                 [
                     'messages' => [
-                        __('Please correct the data sent.')
+                        __('Please correct the data sent.'),
                     ],
-                    'error' => true
+                    'error' => true,
                 ]
             )
             ->willReturnSelf();
@@ -426,27 +383,12 @@ class InlineEditTest extends TestCase
     }
 
     /**
-     * Unit test for verifying Localized Exception during inline edit.
-     *
-     * @return void
+     * Unit test for verifying Localized Exception during inline edit
      */
-    public function testExecuteLocalizedException(): void
+    public function testExecuteLocalizedException()
     {
         $exception = new LocalizedException(__('Exception message'));
         $this->prepareMocksForTesting();
-        $this->dataObjectHelper
-            ->method('populateWithArray')
-            ->withConsecutive(
-                [
-                    $this->customerData,
-                    [
-                        'name' => 'Firstname Lastname',
-                        'email' => 'test@test.ua'
-                    ],
-                    CustomerInterface::class
-                ]
-            );
-
         $this->customerData->expects($this->once())
             ->method('getDefaultBilling')
             ->willReturn(false);
@@ -470,26 +412,12 @@ class InlineEditTest extends TestCase
     }
 
     /**
-     * Unit test for verifying Execute Exception during inline edit.
-     *
-     * @return void
+     * Unit test for verifying Execute Exception during inline edit
      */
-    public function testExecuteException(): void
+    public function testExecuteException()
     {
         $exception = new \Exception('Exception message');
         $this->prepareMocksForTesting();
-        $this->dataObjectHelper
-            ->method('populateWithArray')
-            ->withConsecutive(
-                [
-                    $this->customerData,
-                    [
-                        'name' => 'Firstname Lastname',
-                        'email' => 'test@test.ua'
-                    ],
-                    CustomerInterface::class
-                ]
-            );
         $this->customerData->expects($this->once())
             ->method('getDefaultBilling')
             ->willReturn(false);

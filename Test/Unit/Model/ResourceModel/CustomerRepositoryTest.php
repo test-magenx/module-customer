@@ -124,9 +124,6 @@ class CustomerRepositoryTest extends TestCase
      */
     private $model;
 
-    /**
-     * @inheritDoc
-     */
     protected function setUp(): void
     {
         $this->customerResourceModel =
@@ -214,10 +211,9 @@ class CustomerRepositoryTest extends TestCase
     }
 
     /**
-     * @return void
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
-    public function testSave(): void
+    public function testSave()
     {
         $customerId = 1;
 
@@ -254,7 +250,7 @@ class CustomerRepositoryTest extends TestCase
                 'getWebsiteId',
                 'getAddresses',
                 'setAddresses',
-                'getGroupId'
+                'getGroupId',
             ]
         );
         $customerSecureData = $this->getMockBuilder(CustomerSecure::class)
@@ -273,9 +269,12 @@ class CustomerRepositoryTest extends TestCase
         $this->customer->expects($this->atLeastOnce())
             ->method('getId')
             ->willReturn($customerId);
-        $this->customer
+        $this->customer->expects($this->at(4))
             ->method('__toArray')
-            ->willReturnOnConsecutiveCalls(['group_id' => 1], []);
+            ->willReturn([]);
+        $this->customer->expects($this->at(3))
+            ->method('__toArray')
+            ->willReturn(['group_id' => 1]);
         $customerModel->expects($this->once())
             ->method('setGroupId')
             ->with(1);
@@ -338,7 +337,7 @@ class CustomerRepositoryTest extends TestCase
             ->willReturnMap(
                 [
                     ['rpToken', $customerModel],
-                    [null, $customerModel]
+                    [null, $customerModel],
                 ]
             );
         $customerModel->expects($this->once())
@@ -346,7 +345,7 @@ class CustomerRepositoryTest extends TestCase
             ->willReturnMap(
                 [
                     ['rpTokenCreatedAt', $customerModel],
-                    [null, $customerModel]
+                    [null, $customerModel],
                 ]
             );
 
@@ -387,7 +386,7 @@ class CustomerRepositoryTest extends TestCase
                 [
                     'customer_data_object' => $this->customer,
                     'orig_customer_data_object' => $origCustomer,
-                    'delegate_data' => []
+                    'delegate_data' => [],
                 ]
             );
 
@@ -395,10 +394,9 @@ class CustomerRepositoryTest extends TestCase
     }
 
     /**
-     * @return void
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
-    public function testSaveWithPasswordHash(): void
+    public function testSaveWithPasswordHash()
     {
         $customerId = 1;
         $passwordHash = 'ukfa4sdfa56s5df02asdf4rt';
@@ -532,7 +530,7 @@ class CustomerRepositoryTest extends TestCase
                 [
                     'customer_data_object' => $this->customer,
                     'orig_customer_data_object' => $origCustomer,
-                    'delegate_data' => []
+                    'delegate_data' => [],
                 ]
             );
 
@@ -540,10 +538,9 @@ class CustomerRepositoryTest extends TestCase
     }
 
     /**
-     * @return void
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
-    public function testGetList(): void
+    public function testGetList()
     {
         $collection = $this->createMock(Collection::class);
         $searchResults = $this->getMockForAbstractClass(
@@ -559,23 +556,19 @@ class CustomerRepositoryTest extends TestCase
             false
         );
         $customerModel = $this->getMockBuilder(\Magento\Customer\Model\Customer::class)
-            ->onlyMethods(
+            ->setMethods(
                 [
                     'getId',
                     'setId',
-                    'getAttributeSetId',
-                    'getDataModel',
-                    'getCollection'
-                ]
-            )
-            ->addMethods(
-                [
                     'setStoreId',
                     'getStoreId',
+                    'getAttributeSetId',
                     'setAttributeSetId',
                     'setRpToken',
                     'setRpTokenCreatedAt',
-                    'setPasswordHash'
+                    'getDataModel',
+                    'setPasswordHash',
+                    'getCollection'
                 ]
             )
             ->setMockClassName('customerModel')
@@ -614,60 +607,30 @@ class CustomerRepositoryTest extends TestCase
             ->with('attribute-code');
         $collection->expects($this->once())
             ->method('addNameToSelect');
-        $collection
+        $collection->expects($this->at(2))
             ->method('joinAttribute')
-            ->withConsecutive(
-                [
-                    'billing_postcode',
-                    'customer_address/postcode',
-                    'default_billing',
-                    null,
-                    'left'
-                ],
-                [
-                    'billing_city',
-                    'customer_address/city',
-                    'default_billing',
-                    null,
-                    'left'
-                ],
-                [
-                    'billing_telephone',
-                    'customer_address/telephone',
-                    'default_billing',
-                    null,
-                    'left'
-                ],
-                [
-                    'billing_region',
-                    'customer_address/region',
-                    'default_billing',
-                    null,
-                    'left'
-                ],
-                [
-                    'billing_country_id',
-                    'customer_address/country_id',
-                    'default_billing',
-                    null,
-                    'left'
-                ],
-                [
-                    'billing_company',
-                    'customer_address/company',
-                    'default_billing',
-                    null,
-                    'left'
-                ]
-            )
-            ->willReturnOnConsecutiveCalls(
-                $collection,
-                $collection,
-                $collection,
-                $collection,
-                $collection,
-                $collection
-            );
+            ->with('billing_postcode', 'customer_address/postcode', 'default_billing', null, 'left')
+            ->willReturnSelf();
+        $collection->expects($this->at(3))
+            ->method('joinAttribute')
+            ->with('billing_city', 'customer_address/city', 'default_billing', null, 'left')
+            ->willReturnSelf();
+        $collection->expects($this->at(4))
+            ->method('joinAttribute')
+            ->with('billing_telephone', 'customer_address/telephone', 'default_billing', null, 'left')
+            ->willReturnSelf();
+        $collection->expects($this->at(5))
+            ->method('joinAttribute')
+            ->with('billing_region', 'customer_address/region', 'default_billing', null, 'left')
+            ->willReturnSelf();
+        $collection->expects($this->at(6))
+            ->method('joinAttribute')
+            ->with('billing_country_id', 'customer_address/country_id', 'default_billing', null, 'left')
+            ->willReturnSelf();
+        $collection->expects($this->at(7))
+            ->method('joinAttribute')
+            ->with('billing_company', 'customer_address/company', 'default_billing', null, 'left')
+            ->willReturnSelf();
         $this->collectionProcessorMock->expects($this->once())
             ->method('process')
             ->with($searchCriteria, $collection);
@@ -690,10 +653,7 @@ class CustomerRepositoryTest extends TestCase
         $this->assertSame($searchResults, $this->model->getList($searchCriteria));
     }
 
-    /**
-    * @return void
-    */
-    public function testDeleteById(): void
+    public function testDeleteById()
     {
         $customerId = 14;
         $customerModel = $this->createPartialMock(\Magento\Customer\Model\Customer::class, ['delete']);
@@ -711,10 +671,7 @@ class CustomerRepositoryTest extends TestCase
         $this->assertTrue($this->model->deleteById($customerId));
     }
 
-    /**
-    * @return void
-    */
-    public function testDelete(): void
+    public function testDelete()
     {
         $customerId = 14;
         $customerModel = $this->createPartialMock(\Magento\Customer\Model\Customer::class, ['delete']);

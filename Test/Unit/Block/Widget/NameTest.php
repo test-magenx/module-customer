@@ -55,36 +55,24 @@ class NameTest extends TestCase
     const INVALID_ATTRIBUTE_CODE = 'invalid attribute code';
 
     const PREFIX_STORE_LABEL = 'Name Prefix';
-    /**#@-*/
 
-    /**
-     * @var MockObject|AttributeMetadataInterface
-     */
+    /**#@-*/
+    /** @var  MockObject|AttributeMetadataInterface */
     private $attribute;
 
-    /**
-     * @var MockObject|Options
-     */
+    /** @var  MockObject|Options */
     private $_options;
 
-    /**
-     * @var MockObject|Escaper
-     */
+    /** @var  MockObject|Escaper */
     private $_escaper;
 
-    /**
-     * @var Name
-     */
+    /** @var  Name */
     private $_block;
 
-    /**
-     * @var MockObject|CustomerMetadataInterface
-     */
+    /** @var  MockObject|CustomerMetadataInterface */
     private $customerMetadata;
 
-    /**
-     * @var MockObject|AddressMetadataInterface
-     */
+    /** @var MockObject|AddressMetadataInterface */
     private $addressMetadata;
 
     /**
@@ -92,14 +80,6 @@ class NameTest extends TestCase
      */
     protected $_objectManager;
 
-    /**
-     * @var bool
-     */
-    private $isVisibleAttribute = true;
-
-    /**
-     * @inheritDoc
-     */
     protected function setUp(): void
     {
         $this->_objectManager = new ObjectManager($this);
@@ -139,23 +119,18 @@ class NameTest extends TestCase
     }
 
     /**
-     * @return void
      * @see self::_setUpShowAttribute()
      */
-    public function testShowPrefix(): void
+    public function testShowPrefix()
     {
         $this->_setUpShowAttribute([Customer::PREFIX => self::PREFIX]);
         $this->assertTrue($this->_block->showPrefix());
 
-        $this->isVisibleAttribute = false;
+        $this->attribute->expects($this->at(0))->method('isVisible')->willReturn(false);
         $this->assertFalse($this->_block->showPrefix());
-        $this->isVisibleAttribute = true;
     }
 
-    /**
-    * @return void
-    */
-    public function testShowPrefixWithException(): void
+    public function testShowPrefixWithException()
     {
         $this->customerMetadata->expects(
             $this->any()
@@ -174,11 +149,9 @@ class NameTest extends TestCase
 
     /**
      * @param $method
-     *
-     * @return void
      * @dataProvider methodDataProvider
      */
-    public function testMethodWithNoSuchEntityException($method): void
+    public function testMethodWithNoSuchEntityException($method)
     {
         $this->customerMetadata->expects(
             $this->any()
@@ -198,7 +171,7 @@ class NameTest extends TestCase
     /**
      * @return array
      */
-    public function methodDataProvider(): array
+    public function methodDataProvider()
     {
         return [
             'showPrefix' => ['showPrefix'],
@@ -211,55 +184,39 @@ class NameTest extends TestCase
     }
 
     /**
-     * @return void
      * @see self::_setUpIsAttributeRequired()
      */
-    public function testIsPrefixRequired(): void
+    public function testIsPrefixRequired()
     {
         $this->_setUpIsAttributeRequired();
         $this->assertTrue($this->_block->isPrefixRequired());
     }
 
-    /**
-    * @return void
-    */
-    public function testShowMiddlename(): void
+    public function testShowMiddlename()
     {
         $this->_setUpShowAttribute([Customer::MIDDLENAME => self::MIDDLENAME]);
         $this->assertTrue($this->_block->showMiddlename());
     }
 
-    /**
-    * @return void
-    */
-    public function testIsMiddlenameRequired(): void
+    public function testIsMiddlenameRequired()
     {
         $this->_setUpIsAttributeRequired();
         $this->assertTrue($this->_block->isMiddlenameRequired());
     }
 
-    /**
-    * @return void
-    */
-    public function testShowSuffix(): void
+    public function testShowSuffix()
     {
         $this->_setUpShowAttribute([Customer::SUFFIX => self::SUFFIX]);
         $this->assertTrue($this->_block->showSuffix());
     }
 
-    /**
-    * @return void
-    */
-    public function testIsSuffixRequired(): void
+    public function testIsSuffixRequired()
     {
         $this->_setUpIsAttributeRequired();
         $this->assertTrue($this->_block->isSuffixRequired());
     }
 
-    /**
-    * @return void
-    */
-    public function testGetPrefixOptionsNotEmpty(): void
+    public function testGetPrefixOptionsNotEmpty()
     {
         /**
          * Added some padding so that the trim() call on Customer::getPrefix() will remove it. Also added
@@ -290,10 +247,7 @@ class NameTest extends TestCase
         $this->assertSame($expectedOptions, $this->_block->getPrefixOptions());
     }
 
-    /**
-    * @return void
-    */
-    public function testGetPrefixOptionsEmpty(): void
+    public function testGetPrefixOptionsEmpty()
     {
         $customer = $this->getMockBuilder(
             CustomerInterface::class
@@ -311,10 +265,7 @@ class NameTest extends TestCase
         $this->assertEmpty($this->_block->getPrefixOptions());
     }
 
-    /**
-    * @return void
-    */
-    public function testGetSuffixOptionsNotEmpty(): void
+    public function testGetSuffixOptionsNotEmpty()
     {
         /**
          * Added padding and special characters to show that trim() works on Customer::getSuffix() and that
@@ -344,10 +295,7 @@ class NameTest extends TestCase
         $this->assertSame($expectedOptions, $this->_block->getSuffixOptions());
     }
 
-    /**
-    * @return void
-    */
-    public function testGetSuffixOptionsEmpty(): void
+    public function testGetSuffixOptionsEmpty()
     {
         $customer = $this->getMockBuilder(
             CustomerInterface::class
@@ -365,10 +313,7 @@ class NameTest extends TestCase
         $this->assertEmpty($this->_block->getSuffixOptions());
     }
 
-    /**
-    * @return void
-    */
-    public function testGetClassName(): void
+    public function testGetClassName()
     {
         /** Test the default case when the block has no data set for the class name. */
         $this->assertEquals(self::DEFAULT_CLASS_NAME, $this->_block->getClassName());
@@ -384,18 +329,31 @@ class NameTest extends TestCase
      * @param bool $isSuffixVisible Value returned by Name::showSuffix()
      * @param string $expectedValue The expected value of Name::getContainerClassName()
      *
-     * @return void
      * @dataProvider getContainerClassNameProvider
      */
-    public function testGetContainerClassName(
-        $isPrefixVisible,
-        $isMiddlenameVisible,
-        $isSuffixVisible,
-        $expectedValue
-    ): void {
-        $this->attribute
-            ->method('isVisible')
-            ->willReturnOnConsecutiveCalls($isPrefixVisible, $isMiddlenameVisible, $isSuffixVisible);
+    public function testGetContainerClassName($isPrefixVisible, $isMiddlenameVisible, $isSuffixVisible, $expectedValue)
+    {
+        $this->attribute->expects(
+            $this->at(0)
+        )->method(
+            'isVisible'
+        )->willReturn(
+            $isPrefixVisible
+        );
+        $this->attribute->expects(
+            $this->at(1)
+        )->method(
+            'isVisible'
+        )->willReturn(
+            $isMiddlenameVisible
+        );
+        $this->attribute->expects(
+            $this->at(2)
+        )->method(
+            'isVisible'
+        )->willReturn(
+            $isSuffixVisible
+        );
 
         $this->assertEquals($expectedValue, $this->_block->getContainerClassName());
     }
@@ -406,7 +364,7 @@ class NameTest extends TestCase
      *
      * @return array
      */
-    public function getContainerClassNameProvider(): array
+    public function getContainerClassNameProvider()
     {
         return [
             [false, false, false, self::DEFAULT_CLASS_NAME],
@@ -430,10 +388,9 @@ class NameTest extends TestCase
      * @param string $storeLabel The attribute's store label
      * @param string $expectedValue The expected value of Name::getStoreLabel()
      *
-     * @return void
      * @dataProvider getStoreLabelProvider
      */
-    public function testGetStoreLabel($attributeCode, $storeLabel, $expectedValue): void
+    public function testGetStoreLabel($attributeCode, $storeLabel, $expectedValue)
     {
         $this->attribute->expects($this->atLeastOnce())->method('getStoreLabel')->willReturn($storeLabel);
         $this->assertEquals($expectedValue, $this->_block->getStoreLabel($attributeCode));
@@ -446,7 +403,7 @@ class NameTest extends TestCase
      *
      * @return array
      */
-    public function getStoreLabelProvider(): array
+    public function getStoreLabelProvider()
     {
         return [
             [self::INVALID_ATTRIBUTE_CODE, '', ''],
@@ -454,10 +411,7 @@ class NameTest extends TestCase
         ];
     }
 
-    /**
-    * @return void
-    */
-    public function testGetStoreLabelWithException(): void
+    public function testGetStoreLabelWithException()
     {
         $this->customerMetadata->expects(
             $this->any()
@@ -478,11 +432,9 @@ class NameTest extends TestCase
      * Helper method for testing all show*() methods.
      *
      * @param array $data Customer attribute(s)
-     *
-     * @return void
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    private function _setUpShowAttribute(array $data): void
+    private function _setUpShowAttribute(array $data)
     {
         $customer = $this->getMockBuilder(CustomerInterface::class)
             ->getMockForAbstractClass();
@@ -499,20 +451,13 @@ class NameTest extends TestCase
          * first call to the method. Subsequent calls may return true or false depending on the returnValue
          * of the at({0, 1, 2, 3, ...}), etc. calls as set and configured in a particular test.
          */
-        $testClass = $this;
-        $this->attribute
-            ->method('isVisible')
-            ->willReturnCallback(function () use ($testClass) {
-                return $testClass->isVisibleAttribute;
-            });
+        $this->attribute->expects($this->at(0))->method('isVisible')->willReturn(true);
     }
 
     /**
      * Helper method for testing all is*Required() methods.
-     *
-     * @return void
      */
-    private function _setUpIsAttributeRequired(): void
+    private function _setUpIsAttributeRequired()
     {
         /**
          * These settings cause the first code path in Name::_getAttribute() to be skipped so that the rest of
@@ -529,8 +474,8 @@ class NameTest extends TestCase
          * all code paths in Name::_getAttribute() will be executed. Returning true for the third isRequired()
          * call causes the is*Required() method of the block to return true for the attribute.
          */
-        $this->attribute
-            ->method('isRequired')
-            ->willReturnOnConsecutiveCalls(false, true, true);
+        $this->attribute->expects($this->at(0))->method('isRequired')->willReturn(false);
+        $this->attribute->expects($this->at(1))->method('isRequired')->willReturn(true);
+        $this->attribute->expects($this->at(2))->method('isRequired')->willReturn(true);
     }
 }
